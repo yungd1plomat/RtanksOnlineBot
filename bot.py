@@ -94,9 +94,8 @@ def get_average_online_last_n_hours(n):
 
 @tasks.loop(seconds=5)
 async def update_presence():
-    while True:
-        online_count = presence_queue.get()
-        await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game(name=f"Online: {online_count}"))
+    online_count = presence_queue.get(timeout=1)
+    await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game(name=f"Online: {online_count}"))
 
 th = Thread(target=parse_online)
 th.start()
@@ -104,7 +103,7 @@ bot = discord.Bot()
 
 @bot.event
 async def on_ready():
-    update_presence.start()
+    await update_presence.start()
 
 @bot.command(description="Get Rtanks online")
 async def online(ctx: discord.ApplicationContext):
