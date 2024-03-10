@@ -94,8 +94,11 @@ def get_average_online_last_n_hours(n):
 
 @tasks.loop(seconds=5)
 async def update_presence():
-    online_count = presence_queue.get(timeout=1)
-    await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game(name=f"Online: {online_count}"))
+    try:
+        online_count = presence_queue.get(timeout=1)
+        await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game(name=f"Online: {online_count}"))
+    except:
+        pass
 
 th = Thread(target=parse_online)
 th.start()
