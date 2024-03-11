@@ -29,8 +29,6 @@ PORT = 6969
 db = sqlite3.connect('rtanks.db', check_same_thread=False)
 cursor = db.cursor()
 
-presence_queue = Queue()
-
 # Table online
 db.execute('''
 CREATE TABLE IF NOT EXISTS online (
@@ -45,37 +43,35 @@ db.execute('''
 CREATE TABLE IF NOT EXISTS users (nickname VARCHAR PRIMARY KEY, last_online DATETIME);
 ''')
 
-
-def parse_online():
+@tasks.loop(seconds=300)
+async def parse_online():
     con = db.cursor()
-    while True:
-        client = ProxyClient(IP, PORT)
-        try:
-            client.handshake()
-            is_success = client.auth(LOGIN, PASSWORD)
-            if not is_success:
-                logging.error("Invalid login/pass")
-                exit()
-            sleep(10)
-            logging.debug("Started parsing")
-            battles_info = client.get_battles()
-            battles = battles_info["battles"]
-            players = []
-            for battle in battles:
-                battle_info = client.get_battle_info(battle["battleId"])
-                for user in battle_info['users_in_battle']:
-                    players.append(user["nickname"])
-            datetime_now = datetime.now().replace (microsecond=0)
-            players = [(player, datetime_now) for player in players]
-            con.executemany("REPLACE INTO users VALUES (?, ?)", players)
-            con.execute("INSERT INTO online VALUES (?, ?, ?)", (len(players), len(battles), datetime_now))
-            db.commit()
-            presence_queue.put(len(players))
-            logging.debug(f"Parsing ended. Results {len(battles)} / {len(players)}")
-        except Exception as e:
+    client = ProxyClient(IP, PORT)
+    try:
+        client.handshake()
+        is_success = client.auth(LOGIN, PASSWORD)
+        if not is_success:
+            logging.error("Invalid login/pass")
+            exit()
+        await sleep(5)
+        logging.debug("Started parsing")
+        battles_info = client.get_battles()
+        battles = battles_info["battles"]
+        players = []
+        for battle in battles:
+            battle_info = client.get_battle_info(battle["battleId"])
+            for user in battle_info['users_in_battle']:
+                players.append(user["nickname"])
+        datetime_now = datetime.now().replace (microsecond=0)
+        players = [(player, datetime_now) for player in players]
+        con.executemany("REPLACE INTO users VALUES (?, ?)", players)
+        con.execute("INSERT INTO online VALUES (?, ?, ?)", (len(players), len(battles), datetime_now))
+        db.commit()
+        await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game(name=f"Online: {len(players)}"))
+        logging.debug(f"Parsing ended. Results {len(battles)} / {len(players)}")
+    except Exception as e:
             logging.error(e)
-        client.disconnect() 
-        sleep(300)
+    client.disconnect() 
 
 def plot_online_data(hours_ago = 24, time_freq = '1h'):
     cur = db.cursor()
@@ -106,21 +102,11 @@ def plot_online_data(hours_ago = 24, time_freq = '1h'):
     plt.close('all')
     return buf
 
-@tasks.loop(seconds=5)
-async def update_presence():
-    try:
-        online_count = presence_queue.get(timeout=1)
-        await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game(name=f"Online: {online_count}"))
-    except:
-        pass
-
-th = Thread(target=parse_online)
-th.start()
 bot = discord.Bot()
 
 @bot.event
 async def on_ready():
-    await update_presence.start()
+    await parse_online.start()
 
 @bot.command(description="Get Rtanks online")
 async def online(ctx: discord.ApplicationContext,
