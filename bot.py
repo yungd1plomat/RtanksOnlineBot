@@ -18,8 +18,8 @@ import io
 plt.style.use('cyberpunk')
 
 coloredlogs.install(level='DEBUG', fmt='%(asctime)s [%(levelname)s] %(message)s')
-logger = logging.getLogger('discord')
-logger.setLevel(logging.INFO)
+logging.getLogger('discord').setLevel(logging.INFO)
+logging.getLogger('matplotlib').setLevel(logging.CRITICAL)
 
 LOGIN = "rtanks_bot"
 PASSWORD="rtanks_bot123"
@@ -103,6 +103,7 @@ def plot_online_data(hours_ago = 24, time_freq = '1h'):
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
     buf.seek(0)
+    plt.close('all')
     return buf
 
 @tasks.loop(seconds=5)
