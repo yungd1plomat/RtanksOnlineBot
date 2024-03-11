@@ -4,4 +4,3 @@ py-cord
 mplcyberpunk
 pandas
 matplotlib
-discord
