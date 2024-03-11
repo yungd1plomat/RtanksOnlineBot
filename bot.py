@@ -132,7 +132,7 @@ async def online(ctx: discord.ApplicationContext,
         plot = plot_online_data(12, '1h')
     else:
         plot = plot_online_data(24, '1h')
-    await ctx.send(content=f'Online for {time}', file=discord.File(plot, filename='image.png'))
+    await ctx.send_response(content=f'Online for {time}', file=discord.File(plot, filename='image.png'))
 
 
 bot.run("MTIxNjMzODAwMjIxODA1NzgyOQ.GfnmLP.v0GRYzSp9K8KNbfRcZswVZiXRJG_csrIs6QDmU")
