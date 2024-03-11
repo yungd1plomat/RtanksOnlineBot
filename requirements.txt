@@ -1,2 +1,7 @@
 PySocks
 coloredlogs
+py-cord
+mplcyberpunk
+pandas
+matplotlib
+discord
