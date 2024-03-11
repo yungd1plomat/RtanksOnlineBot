@@ -18,10 +18,6 @@ import io
 plt.style.use('cyberpunk')
 
 coloredlogs.install(level='DEBUG', fmt='%(asctime)s [%(levelname)s] %(message)s')
-logging.disable(logging.CRITICAL)
-logging.getLogger('proxyclient').setLevel(logging.DEBUG)
-logging.getLogger('discord').setLevel(logging.INFO)
-logging.getLogger('discord.ext').setLevel(logging.INFO)
 
 LOGIN = "rtanks_bot"
 PASSWORD="rtanks_bot123"
