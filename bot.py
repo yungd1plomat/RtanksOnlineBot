@@ -51,8 +51,7 @@ async def parse_online():
         client.handshake()
         is_success = client.auth(LOGIN, PASSWORD)
         if not is_success:
-            logging.error("Invalid login/pass")
-            exit()
+            raise Exception("Can't login account")
         sleep(5)
         logging.debug("Started parsing")
         battles_info = client.get_battles()
