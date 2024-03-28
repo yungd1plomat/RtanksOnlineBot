@@ -76,24 +76,32 @@ def plot_online_data(hours_ago = 24, time_freq = '1h'):
     cur = db.cursor()
     now = datetime.now()
     date = now - timedelta(hours=hours_ago)
-    cur.execute("SELECT date, online FROM online WHERE date >= ? ORDER BY date", (date,))
+    cur.execute("SELECT date, online, battles FROM online WHERE date >= ? ORDER BY date", (date,))
     rows = cur.fetchall()
-    df = pd.DataFrame(rows, columns=['date', 'online'])
+    df = pd.DataFrame(rows, columns=['date', 'online', 'battles'])
     df['date'] = pd.to_datetime(df['date'])
     min_time = df['date'].min().round(freq=time_freq)
     max_time = df['date'].max().round(freq=time_freq)
-    plt.plot(df['date'], df['online'])
+
+    plt.plot(df['date'], df['online'], label='Online')
+    plt.plot(df['date'], df['battles'], label='Battles')
+
     plt.xlabel('Time (MSK)')
     plt.ylabel('Online')
+    plt.legend()
 
     plt.yticks(np.arange(0, max(df['online']) + 10, step=10))
     plt.gca().xaxis.set_major_formatter(md.DateFormatter('%H:%M'))
+    plt.gca().xaxis.set_tick_params(labelsize=8)
+    plt.gca().yaxis.set_tick_params(labelsize=8)
 
     time_range = pd.date_range(min_time, max_time, freq=time_freq)
     plt.xticks(time_range, rotation=45)
     for time in md.date2num(time_range):
         online = round(np.interp(time, md.date2num(df['date']), df['online'].values))
         plt.text(time, online, str(online), ha='center', va='center', fontsize=7, color='white', bbox=dict(facecolor='black', alpha=0.7, boxstyle='round'))
+        battles = round(np.interp(time, md.date2num(df['date']), df['battles'].values))
+        plt.text(time, battles, str(battles), ha='center', va='center', fontsize=7, color='white', bbox=dict(facecolor='black', alpha=0.7, boxstyle='round'))
     mplcyberpunk.add_glow_effects()
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
@@ -109,17 +117,16 @@ async def on_ready():
 
 @bot.command(description="Get Rtanks online")
 async def online(ctx: discord.ApplicationContext,
-                 time: discord.Option(str, choices=['halfhour', 'hour', 'halfday', 'day'])):
+                 time: discord.Option(str, choices=['halfhour', 'hour', '12h', '24h'])):
     if time == "halfhour":
         plot = plot_online_data(0.5, '5min')
     elif time == "hour":
         plot = plot_online_data(1, '15min')
-    elif time == 'halfday':
+    elif time == '12h':
         plot = plot_online_data(12, '1h')
     else:
         plot = plot_online_data(24, '1h')
     await ctx.send_response(content=f'Online for {time}', file=discord.File(plot, filename='image.png'))
-
 
 bot.run("MTIxNjMzODAwMjIxODA1NzgyOQ.GfnmLP.v0GRYzSp9K8KNbfRcZswVZiXRJG_csrIs6QDmU")
 
