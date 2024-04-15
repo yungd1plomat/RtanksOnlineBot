@@ -43,7 +43,7 @@ db.execute('''
 CREATE TABLE IF NOT EXISTS users (nickname VARCHAR PRIMARY KEY, last_online DATETIME);
 ''')
 
-@tasks.loop(seconds=180)
+@tasks.loop(seconds=200)
 async def parse_online():
     con = db.cursor()
     client = ProxyClient(IP, PORT)
@@ -111,9 +111,36 @@ def plot_online_data(hours_ago = 24, time_freq = '1h'):
 
 bot = discord.Bot()
 
-@bot.event
+'''@bot.event
 async def on_ready():
     await parse_online.start()
+'''
+
+@bot.command(description="Get player's last online")
+async def lastonline(ctx: discord.ApplicationContext,
+                     nick: discord.Option(str)):
+    cur = db.cursor()
+    cur.execute("SELECT last_online FROM users WHERE nickname = ?", (nick,))
+    last_online = cur.fetchone()
+    if last_online is None:
+        await ctx.send_response(content=f'No data for {nick}')
+        return
+    last_online = last_online[0]
+    last_online = datetime.strptime(last_online, '%Y-%m-%d %H:%M:%S').timestamp()
+    last_online = f"<t:{int(last_online)}>"
+    await ctx.send_response(content=f'Last online for {nick}: {last_online}')
+
+@bot.command(description="Get total players in database")
+async def total(ctx: discord.ApplicationContext):
+    cur = db.cursor()
+    cur.execute("SELECT COUNT(*) FROM users")
+    total = cur.fetchone()
+    print(total)
+    if total is None:
+        total = 0
+    else:
+        total = int(total[0])
+    await ctx.send_response(content=f'Total players in database: `{total}`')
 
 @bot.command(description="Get Rtanks online")
 async def online(ctx: discord.ApplicationContext,
