@@ -21,8 +21,8 @@ coloredlogs.install(level='DEBUG', fmt='%(asctime)s [%(levelname)s] %(message)s'
 logging.getLogger('discord').setLevel(logging.INFO)
 logging.getLogger('matplotlib').setLevel(logging.CRITICAL)
 
-LOGIN = "rtanks_bot"
-PASSWORD="rtanks_bot123"
+LOGIN = "warthunder"
+PASSWORD="warthunder123"
 IP = "135.125.188.169"
 PORT = 6969
 
