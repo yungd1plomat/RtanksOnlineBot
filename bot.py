@@ -119,7 +119,7 @@ async def on_ready():
 async def lastonline(ctx: discord.ApplicationContext,
                      nick: discord.Option(str)):
     cur = db.cursor()
-    cur.execute("SELECT last_online FROM users WHERE nickname = ?", (nick,))
+    cur.execute("SELECT last_online FROM users WHERE nickname = ? COLLATE NOCASE", (nick,))
     last_online = cur.fetchone()
     if last_online is None:
         await ctx.send_response(content=f'No data for {nick}')
