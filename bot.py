@@ -111,10 +111,9 @@ def plot_online_data(hours_ago = 24, time_freq = '1h'):
 
 bot = discord.Bot()
 
-'''@bot.event
+@bot.event
 async def on_ready():
     await parse_online.start()
-'''
 
 @bot.command(description="Get player's last online")
 async def lastonline(ctx: discord.ApplicationContext,
