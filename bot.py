@@ -43,7 +43,7 @@ db.execute('''
 CREATE TABLE IF NOT EXISTS users (nickname VARCHAR PRIMARY KEY, last_online DATETIME);
 ''')
 
-@tasks.loop(seconds=60)
+@tasks.loop(seconds=180)
 async def parse_online():
     con = db.cursor()
     client = ProxyClient(IP, PORT)
