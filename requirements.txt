@@ -1,4 +1,4 @@
-PySocks
+python_socks
 coloredlogs
 py-cord
 mplcyberpunk
