@@ -126,6 +126,15 @@ class ProxyClient:
         except:
             logging.debug("Can't get battles")
     
+    def get_battle_info(self, battle_id):
+        self.send_data(f"lobby;get_show_battle_info;{battle_id}")
+        try:
+            data = self.receive_data("lobby;show_battle_info;")
+            battle_info = data.split(';')[2]
+            return json.loads(battle_info)
+        except:
+            logging.debug("Can't get battle info")
+
     def enter_battle(self, battle_id):
         self.send_data(f"lobby;enter_battle;{battle_id};false")
         self.send_data(f"lobby;enter_battle_team;{battle_id};true")
@@ -137,11 +146,11 @@ class ProxyClient:
         except:
             return False
 
-    def buy_item(self, item_id, count):
-        self.send_data(f"garage;try_buy_item;{item_id};{count}")
-
     def leave_battle(self):
         self.send_data("battle;i_exit_from_battle")
+
+    def buy_item(self, item_id, count):
+        self.send_data(f"garage;try_buy_item;{item_id};{count}")
 
     def change_password(self, old_password, new_password):
         self.send_data(f"lobby;change_password;{old_password};{new_password}")
@@ -151,7 +160,7 @@ class ProxyClient:
         except:
             return False
 
-    def send_chat_message(self, message):
+    def send_battle_chat(self, message):
         self.send_data(f"battle;chat;{message};false")
         
     def disconnect(self):
