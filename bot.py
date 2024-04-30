@@ -49,6 +49,8 @@ async def parse_online():
     client = ProxyClient(IP, PORT)
     try:
         client.handshake()
+        client.load_resources()
+        sleep(3)
         is_success = client.auth(LOGIN, PASSWORD)
         if not is_success:
             raise Exception("Can't login account")
